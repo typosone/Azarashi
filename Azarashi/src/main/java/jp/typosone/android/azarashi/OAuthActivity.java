@@ -22,7 +22,6 @@ import android.content.Intent;
 import android.content.Loader;
 import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 
 import twitter4j.auth.AccessToken;
 import twitter4j.auth.OAuthAuthorization;
@@ -43,7 +42,6 @@ public class OAuthActivity extends Activity {
     private static final int LID_ACC = 0x70000002;
     private OAuthAuthorization mOAuth;
     private RequestToken mRequestToken;
-    private RequestTokenLoaderCallbacks mRequestCallbacks;
     private AccessTokenLoaderCallbacks mAccessCallbacks;
 
     /**
@@ -59,7 +57,7 @@ public class OAuthActivity extends Activity {
         super.onCreate(savedInstanceState);
         Configuration conf = ConfigurationContext.getInstance();
         mOAuth = new OAuthAuthorization(conf);
-        mRequestCallbacks = new RequestTokenLoaderCallbacks();
+        RequestTokenLoaderCallbacks mRequestCallbacks = new RequestTokenLoaderCallbacks();
         mAccessCallbacks = new AccessTokenLoaderCallbacks();
 
         getLoaderManager().initLoader(LID_REQ, null, mRequestCallbacks);
@@ -124,9 +122,8 @@ public class OAuthActivity extends Activity {
 
         @Override
         public void onLoadFinished(Loader<AccessToken> loader, AccessToken data) {
-            if (data != null) {
-                Log.d(getPackageName(), "アクセストークン取得完了");
-            }
+            TwitterUtils utils = new TwitterUtils(OAuthActivity.this);
+            utils.saveAccessToken(data);
         }
 
         @Override
