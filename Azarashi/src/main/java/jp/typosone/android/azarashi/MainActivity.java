@@ -16,6 +16,7 @@
 
 package jp.typosone.android.azarashi;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -37,14 +38,22 @@ public class MainActivity extends Activity {
 
         setContentView(R.layout.activity_main);
 
+        ActionBar bar = getActionBar();
+        if (bar != null) {
+            bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+
+            bar.addTab(bar.newTab().setText(R.string.bar_home).setTabListener(
+                    new TimeLineTabListener(TimeLineFragment.factory(R.layout.fragment_timeline))
+            ));
+        }
     }
 
     /**
      * 起動したActivityの結果が正しいか確認します。
-     *
+     * <p/>
      * 現状では以下のActivityに対して結果を返すよう期待しています。
      * <ul>
-     *     <li>OAuthActivity</li>
+     * <li>OAuthActivity</li>
      * </ul>
      *
      * @see android.app.Activity#startActivityForResult(android.content.Intent, int)
@@ -53,11 +62,13 @@ public class MainActivity extends Activity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case REQUEST_OAUTH:
-                //TODO: アクセストークン取得チェックを行う(SharedPreferencesから)
+                if (!mTwitterUtils.hasAccessToken()) {
+                    throw new IllegalStateException("アクセストークンがありません");
+                }
                 //TODO: タイムラインの読み込みを行う
                 break;
             default:
-                super.onActivityResult(requestCode,resultCode,data);
+                super.onActivityResult(requestCode, resultCode, data);
                 break;
         }
     }
