@@ -8,6 +8,8 @@
         android:minSdkVersion="11"
         android:targetSdkVersion="16" />
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
@@ -22,6 +24,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".OAuthActivity"
+            android:launchMode="singleTask"
+            android:label="@string/title_oauth">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="jp.typosone.android.azarashi" android:host="callback" />
+            </intent-filter>
+            </activity>
     </application>
 
 </manifest>
