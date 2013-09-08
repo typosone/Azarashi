@@ -22,8 +22,10 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 
+import twitter4j.TwitterStream;
+
 public class MainActivity extends Activity {
-    public static final int REQUEST_OAUTH = 0x10000001;
+    public static final int REQUEST_OAUTH = 0x11111111;
     private TwitterUtils mTwitterUtils;
 
     @Override
@@ -34,6 +36,7 @@ public class MainActivity extends Activity {
         if (!mTwitterUtils.hasAccessToken()) {
             Intent intent = new Intent(this, OAuthActivity.class);
             startActivityForResult(intent, REQUEST_OAUTH);
+            return;
         }
 
         setContentView(R.layout.activity_main);
@@ -46,6 +49,14 @@ public class MainActivity extends Activity {
                     new TimeLineTabListener(TimeLineFragment.factory(R.layout.fragment_timeline))
             ));
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        TwitterStream stream = mTwitterUtils.getStream();
+
     }
 
     /**

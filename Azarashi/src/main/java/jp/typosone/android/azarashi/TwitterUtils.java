@@ -19,27 +19,31 @@ package jp.typosone.android.azarashi;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import twitter4j.TwitterStream;
+import twitter4j.TwitterStreamFactory;
 import twitter4j.auth.AccessToken;
 
 /**
  * Twitter関連の複雑な手順を1メソッドにまとめたクラスです。
- *
  */
 public class TwitterUtils {
     public static final String PREFERENCES_NAME = TwitterUtils.class.getPackage().getName();
     public static final String PREF_ACCESS_TOKEN = "acc_ess_Tok_en?";
     public static final String PREF_ACCESS_SECRET = "acc_ess_sec_ret";
-//    private Context mContext;
+    private Context mContext;
     private SharedPreferences mPreferences;
+    private AccessToken mAccessToken;
+    private TwitterStream mTwitterStream;
 
     public TwitterUtils(Context context) {
-//        mContext = context;
+        mContext = context;
         mPreferences = context.getSharedPreferences(
                 PREFERENCES_NAME, Context.MODE_PRIVATE);
     }
 
     public boolean hasAccessToken() {
-        return getAccessToken() != null && getAccessSecret() != null;
+        return mPreferences.getString(PREF_ACCESS_TOKEN, null) != null
+                && mPreferences.getString(PREF_ACCESS_SECRET, null) != null;
     }
 
     public void saveAccessToken(AccessToken token) {
@@ -51,11 +55,25 @@ public class TwitterUtils {
         editor.commit();
     }
 
-    public String getAccessToken() {
-        return mPreferences.getString(PREF_ACCESS_TOKEN, null);
+    public AccessToken getAccessToken() {
+        if (mAccessToken == null && hasAccessToken()) {
+            mAccessToken = new AccessToken(
+                    mPreferences.getString(PREF_ACCESS_TOKEN, null),
+                    mPreferences.getString(PREF_ACCESS_SECRET, null)
+            );
+        }
+        return mAccessToken;
     }
 
-    public String getAccessSecret() {
-        return mPreferences.getString(PREF_ACCESS_SECRET, null);
+    public TwitterStream getStream() {
+        if (mTwitterStream == null && hasAccessToken()) {
+            mTwitterStream = TwitterStreamFactory.getSingleton();
+            mTwitterStream.setOAuthConsumer(
+                    mContext.getString(R.string.consumer_key),
+                    mContext.getString(R.string.consumer_secret)
+            );
+            mTwitterStream.setOAuthAccessToken(getAccessToken());
+        }
+        return mTwitterStream;
     }
 }
