@@ -19,14 +19,25 @@ package jp.typosone.android.azarashi;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.Menu;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 
+import java.lang.ref.WeakReference;
+
+import twitter4j.Status;
 import twitter4j.TwitterStream;
 
 public class MainActivity extends Activity {
     public static final int REQUEST_OAUTH = 0x11111111;
     private TwitterUtils mTwitterUtils;
+    private Handler mHandler;
+    private TimeLineFragment mHomeFragment, mMentionsFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +49,7 @@ public class MainActivity extends Activity {
             startActivityForResult(intent, REQUEST_OAUTH);
             return;
         }
+        mHandler = new UiHandler(this);
 
         setContentView(R.layout.activity_main);
 
@@ -45,8 +57,14 @@ public class MainActivity extends Activity {
         if (bar != null) {
             bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
+            mHomeFragment = TimeLineFragment.factory(R.layout.fragment_timeline);
+            mMentionsFragment = TimeLineFragment.factory(R.layout.fragment_timeline);
+
             bar.addTab(bar.newTab().setText(R.string.bar_home).setTabListener(
-                    new TimeLineTabListener(TimeLineFragment.factory(R.layout.fragment_timeline))
+                    new TimeLineTabListener(mHomeFragment)
+            ));
+            bar.addTab(bar.newTab().setText(R.string.bar_mentions).setTabListener(
+                    new TimeLineTabListener(mMentionsFragment)
             ));
         }
     }
@@ -56,10 +74,11 @@ public class MainActivity extends Activity {
         super.onStart();
 
         TwitterStream stream = mTwitterUtils.getStream();
-
+        stream.addListener(new UserStreamAdapter(mHandler));
     }
 
     /**
+     * <p/>
      * 起動したActivityの結果が正しいか確認します。
      * <p/>
      * 現状では以下のActivityに対して結果を返すよう期待しています。
@@ -84,6 +103,23 @@ public class MainActivity extends Activity {
         }
     }
 
+    /**
+     * Homeのタイムラインにステータスを追加します。
+     *
+     * @param status twitter4j.Status のインスタンス
+     * @see twitter4j.Status
+     */
+    public void addStatus(Status status) {
+        View item = View.inflate(this, R.layout.status_item, null);
+        ((ImageView) item.findViewById(R.id.user_icon))
+                .setImageURI(Uri.parse(status.getUser().getMiniProfileImageURL()));
+        ((TextView)item.findViewById(R.id.user_name))
+                .setText(status.getUser().getName());
+        ((TextView)item.findViewById(R.id.user_screen_name))
+                .setText(status.getUser().getScreenName());
+
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -91,4 +127,33 @@ public class MainActivity extends Activity {
         return true;
     }
 
+    public static class UiHandler extends Handler {
+        public static final int ADD_STATUS_TO_HOME = 0x11111111;
+        public static final int ADD_STATUS_TO_MENTIONS = 0x22222222;
+        private WeakReference<MainActivity> mMainActivityReference;
+
+        public UiHandler(MainActivity activity) {
+            mMainActivityReference = new WeakReference<MainActivity>(activity);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            MainActivity activity = mMainActivityReference.get();
+            if (activity != null) {
+                switch (msg.what) {
+                    case ADD_STATUS_TO_HOME:
+                        if (msg.obj instanceof Status) {
+                            Status status = (Status) msg.obj;
+                            activity.addStatus(status);
+                        }
+                        break;
+                    case ADD_STATUS_TO_MENTIONS:
+                        break;
+                    default:
+                        super.handleMessage(msg);
+                        break;
+                }
+            }
+        }
+    }
 }

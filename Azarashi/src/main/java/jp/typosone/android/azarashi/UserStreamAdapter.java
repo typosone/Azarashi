@@ -1,7 +1,9 @@
 package jp.typosone.android.azarashi;
 
 
+import android.os.Bundle;
 import android.os.Handler;
+import android.os.Message;
 
 import twitter4j.Status;
 
@@ -18,6 +20,9 @@ public class UserStreamAdapter extends twitter4j.UserStreamAdapter {
     @Override
     public void onStatus(Status status) {
         super.onStatus(status);
-//        status.
+
+        Message msg = new Message();
+        msg.obj = status;
+        mHandler.sendMessage(msg);
     }
 }

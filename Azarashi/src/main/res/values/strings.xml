@@ -7,5 +7,8 @@
     <string name="title_oauth">Twitter認証</string>
     <string name="bar_home">Home</string>
     <string name="bar_mentions">Mentions</string>
+    <string name="client_via">via</string>
+    <string name="user_icon">user_icon</string>
+    <string name="user_at">@</string>
 
 </resources>
