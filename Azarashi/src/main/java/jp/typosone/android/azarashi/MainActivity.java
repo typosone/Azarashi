@@ -75,6 +75,7 @@ public class MainActivity extends Activity {
 
         TwitterStream stream = mTwitterUtils.getStream();
         stream.addListener(new UserStreamAdapter(mHandler));
+        stream.user();
     }
 
     /**
@@ -117,6 +118,11 @@ public class MainActivity extends Activity {
                 .setText(status.getUser().getName());
         ((TextView)item.findViewById(R.id.user_screen_name))
                 .setText(status.getUser().getScreenName());
+        ((TextView) item.findViewById(R.id.status_body))
+                .setText(status.getText());
+        ((TextView) item.findViewById(R.id.status_client))
+                .setText(status.getSource());
+        mHomeFragment.addStatusView(item);
 
     }
 
