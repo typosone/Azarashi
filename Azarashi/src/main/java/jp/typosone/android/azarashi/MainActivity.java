@@ -19,14 +19,10 @@ package jp.typosone.android.azarashi;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.view.Menu;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import java.lang.ref.WeakReference;
 
@@ -111,19 +107,7 @@ public class MainActivity extends Activity {
      * @see twitter4j.Status
      */
     public void addStatus(Status status) {
-        View item = View.inflate(this, R.layout.status_item, null);
-        ((ImageView) item.findViewById(R.id.user_icon))
-                .setImageURI(Uri.parse(status.getUser().getMiniProfileImageURL()));
-        ((TextView)item.findViewById(R.id.user_name))
-                .setText(status.getUser().getName());
-        ((TextView)item.findViewById(R.id.user_screen_name))
-                .setText(status.getUser().getScreenName());
-        ((TextView) item.findViewById(R.id.status_body))
-                .setText(status.getText());
-        ((TextView) item.findViewById(R.id.status_client))
-                .setText(status.getSource());
-        mHomeFragment.addStatusView(item);
-
+        mHomeFragment.addStatus(status);
     }
 
     @Override

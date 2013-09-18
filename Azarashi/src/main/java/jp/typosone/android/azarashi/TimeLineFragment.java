@@ -19,11 +19,23 @@ package jp.typosone.android.azarashi;
 import android.app.Activity;
 import android.app.ListFragment;
 import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.LinkedList;
+import java.util.List;
 
 import twitter4j.Status;
 
@@ -32,7 +44,8 @@ import twitter4j.Status;
  */
 public class TimeLineFragment extends ListFragment {
 
-    private ArrayAdapter<View> mAdapter;
+    private StatusListAdapter mAdapter;
+    private LinkedList<Status> mStatusList;
 
     public static TimeLineFragment factory(int layoutId) {
         TimeLineFragment fragment = new TimeLineFragment();
@@ -47,18 +60,18 @@ public class TimeLineFragment extends ListFragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        mStatusList = new LinkedList<Status>();
+
         Activity activity = getActivity();
         if (activity != null) {
-            mAdapter = new ArrayAdapter<View>(
-                    activity, android.R.layout.simple_list_item_1);
-
+            mAdapter = new StatusListAdapter(getActivity(), 0, mStatusList);
             setListAdapter(mAdapter);
         }
-
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(
+            LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Bundle args = getArguments();
         if (args != null) {
             return inflater.inflate(args.getInt("layoutId"), container, false);
@@ -66,14 +79,60 @@ public class TimeLineFragment extends ListFragment {
         return null;
     }
 
-    public void addStatusView(View view) {
-        mAdapter.add(view);
+    public void addStatus(Status status) {
+        mAdapter.add(status);
     }
 
-    public static class StatusListAdapter extends ArrayAdapter<Status> {
+    public class StatusListAdapter extends ArrayAdapter<Status> {
 
-        public StatusListAdapter(Context context, int resource) {
-            super(context, resource);
+        private LayoutInflater mLayoutInflater;
+
+        public StatusListAdapter(Context context, int textViewResourceId, List<Status> objects) {
+            super(context, textViewResourceId, objects);
+            Object obj = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            if (obj instanceof LayoutInflater) {
+                mLayoutInflater = (LayoutInflater) obj;
+            }
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            Status item = getItem(position);
+
+            if (convertView == null) {
+                convertView = mLayoutInflater.inflate(R.layout.status_item, null);
+            }
+
+            if (convertView != null) {
+                ((ImageView) convertView.findViewById(R.id.user_icon))
+                        .setImageDrawable(downloadImage(item.getUser().getMiniProfileImageURL()));
+//                URI(Uri.parse(item.getUser().getMiniProfileImageURL()));
+                ((TextView) convertView.findViewById(R.id.user_name))
+                        .setText(item.getUser().getName());
+                ((TextView) convertView.findViewById(R.id.user_screen_name))
+                        .setText(item.getUser().getScreenName());
+                ((TextView) convertView.findViewById(R.id.status_body))
+                        .setText(item.getText());
+                ((TextView) convertView.findViewById(R.id.status_client))
+                        .setText(item.getSource());
+            }
+
+            return convertView;
+        }
+
+        private Drawable downloadImage(String address) {
+            Drawable data = null;
+            try {
+                URL url = new URL(address);
+                InputStream in = (InputStream) url.getContent();
+                data = Drawable.createFromStream(in,"icon");
+            } catch (MalformedURLException e) {
+                Log.e(this.getClass().getPackage().getName(), e.getMessage(), e);
+            } catch (IOException e) {
+                Log.e(this.getClass().getPackage().getName(), e.getMessage(), e);
+            }
+            return data;
         }
     }
+
 }

@@ -23,7 +23,7 @@
         android:layout_marginLeft="5dp"
         android:layout_marginTop="5dp"
         android:layout_toRightOf="@id/user_icon"
-        android:textColor="@android:color/white"
+        android:textColor="#FFF"
         android:textSize="12sp" />
 
     <TextView
@@ -33,9 +33,9 @@
         android:layout_alignTop="@id/user_name"
         android:layout_marginLeft="6dp"
         android:layout_toRightOf="@id/user_name"
-        android:textColor="@android:color/secondary_text_light"
-        android:textSize="12sp"
-        android:text="@string/user_at"/>
+        android:text="@string/user_at"
+        android:textColor="#888"
+        android:textSize="12sp" />
 
     <TextView
         android:id="@+id/user_screen_name"
@@ -43,7 +43,7 @@
         android:layout_height="wrap_content"
         android:layout_alignTop="@id/at_mark"
         android:layout_toRightOf="@id/at_mark"
-        android:textColor="@android:color/secondary_text_light"
+        android:textColor="#888"
         android:textSize="12sp" />
 
     <TextView
@@ -54,6 +54,7 @@
         android:layout_marginLeft="5dp"
         android:layout_marginTop="2dp"
         android:layout_toRightOf="@id/user_icon"
+        android:textColor="#FFF"
         android:textSize="16sp" />
 
     <TextView
@@ -63,7 +64,7 @@
         android:layout_below="@id/status_body"
         android:layout_toRightOf="@id/user_icon"
         android:text="@string/client_via"
-        android:textColor="@android:color/secondary_text_light"
+        android:textColor="#888"
         android:textSize="12sp" />
 
     <TextView
@@ -73,7 +74,7 @@
         android:layout_alignTop="@id/client_via"
         android:layout_marginLeft="9sp"
         android:layout_toRightOf="@id/client_via"
-        android:textColor="@android:color/secondary_text_light"
+        android:textColor="#888"
         android:textSize="12sp" />
 
 
