@@ -19,8 +19,7 @@ package jp.typosone.android.azarashi;
 import android.app.Activity;
 import android.app.ListFragment;
 import android.content.Context;
-import android.graphics.drawable.Drawable;
-import android.net.Uri;
+import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -30,10 +29,11 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.FailReason;
+import com.nostra13.universalimageloader.core.assist.ImageLoadingListener;
+
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -46,6 +46,7 @@ public class TimeLineFragment extends ListFragment {
 
     private StatusListAdapter mAdapter;
     private LinkedList<Status> mStatusList;
+    private ImageLoader mImageLoader;
 
     public static TimeLineFragment factory(int layoutId) {
         TimeLineFragment fragment = new TimeLineFragment();
@@ -54,19 +55,36 @@ public class TimeLineFragment extends ListFragment {
         args.putInt("layoutId", layoutId);
 
         fragment.setArguments(args);
+        fragment.setRetainInstance(true);
         return fragment;
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        mStatusList = new LinkedList<Status>();
+
+        if (savedInstanceState != null) {
+            Serializable serializable = savedInstanceState.getSerializable("time_line");
+
+            if (serializable != null && serializable instanceof List) {
+                @SuppressWarnings("unchecked")
+                List<Status> list = (List<Status>) savedInstanceState.getSerializable("time_line");
+                mStatusList = new LinkedList<Status>(list);
+            }
+        }
+        if (mStatusList == null) {
+            mStatusList = new LinkedList<Status>();
+        }
 
         Activity activity = getActivity();
         if (activity != null) {
-            mAdapter = new StatusListAdapter(getActivity(), 0, mStatusList);
+            mAdapter = new StatusListAdapter(activity, 0, mStatusList);
             setListAdapter(mAdapter);
         }
+
+        mImageLoader = ImageLoader.getInstance();
+
+
     }
 
     @Override
@@ -80,7 +98,18 @@ public class TimeLineFragment extends ListFragment {
     }
 
     public void addStatus(Status status) {
-        mAdapter.add(status);
+        if (mAdapter.getCount() == 0) {
+            mAdapter.add(status);
+        } else {
+            mAdapter.insert(status, 0);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putSerializable("time_line", mStatusList);
     }
 
     public class StatusListAdapter extends ArrayAdapter<Status> {
@@ -101,38 +130,62 @@ public class TimeLineFragment extends ListFragment {
 
             if (convertView == null) {
                 convertView = mLayoutInflater.inflate(R.layout.status_item, null);
+                Log.d(this.getClass().getPackage().getName(), "convertView is null");
             }
 
             if (convertView != null) {
-                ((ImageView) convertView.findViewById(R.id.user_icon))
-                        .setImageDrawable(downloadImage(item.getUser().getMiniProfileImageURL()));
-//                URI(Uri.parse(item.getUser().getMiniProfileImageURL()));
+                ImageView icon = (ImageView) convertView.findViewById(R.id.user_icon);
+                setStatusUserIcon(icon, item);
                 ((TextView) convertView.findViewById(R.id.user_name))
                         .setText(item.getUser().getName());
                 ((TextView) convertView.findViewById(R.id.user_screen_name))
                         .setText(item.getUser().getScreenName());
                 ((TextView) convertView.findViewById(R.id.status_body))
                         .setText(item.getText());
-                ((TextView) convertView.findViewById(R.id.status_client))
-                        .setText(item.getSource());
+
+                TextView via = ((TextView) convertView.findViewById(R.id.status_client));
+                setStatusVia(via, item);
             }
 
             return convertView;
         }
 
-        private Drawable downloadImage(String address) {
-            Drawable data = null;
-            try {
-                URL url = new URL(address);
-                InputStream in = (InputStream) url.getContent();
-                data = Drawable.createFromStream(in,"icon");
-            } catch (MalformedURLException e) {
-                Log.e(this.getClass().getPackage().getName(), e.getMessage(), e);
-            } catch (IOException e) {
-                Log.e(this.getClass().getPackage().getName(), e.getMessage(), e);
+        private void setStatusVia(TextView view, Status status) {
+            String source = status.getSource();
+            int start = source.indexOf(">") + 1;
+            int end = source.indexOf("<", start);
+            if (start > 0 && end > start) {
+                source = source.substring(start, end);
             }
-            return data;
+            view.setText(source);
         }
-    }
 
+        private void setStatusUserIcon(ImageView view, Status status) {
+            String url = status.getUser().getMiniProfileImageURL();
+            mImageLoader.displayImage(url, view);
+            mImageLoader.loadImage(url, new ImageLoadingListener() {
+                @Override
+                public void onLoadingStarted(String s, View view) {
+                    Log.i(getClass().getPackage().getName(), "start: " + s);
+                }
+
+                @Override
+                public void onLoadingFailed(String s, View view, FailReason failReason) {
+
+                }
+
+                @Override
+                public void onLoadingComplete(String s, View view, Bitmap bitmap) {
+                    ((ImageView)view).setImageBitmap(bitmap);
+                    Log.i(getClass().getPackage().getName(), "finished: \n" + s + "\n" + bitmap.hashCode());
+                }
+
+                @Override
+                public void onLoadingCancelled(String s, View view) {
+
+                }
+            });
+        }
+
+    }
 }

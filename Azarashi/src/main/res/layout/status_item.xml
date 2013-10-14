@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
     android:orientation="horizontal">
 
     <ImageView
@@ -54,6 +54,7 @@
         android:layout_marginLeft="5dp"
         android:layout_marginTop="2dp"
         android:layout_toRightOf="@id/user_icon"
+        android:autoLink="web"
         android:textColor="#FFF"
         android:textSize="16sp" />
 
@@ -63,6 +64,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/status_body"
         android:layout_toRightOf="@id/user_icon"
+        android:layout_marginLeft="5dp"
         android:text="@string/client_via"
         android:textColor="#888"
         android:textSize="12sp" />
@@ -72,7 +74,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignTop="@id/client_via"
-        android:layout_marginLeft="9sp"
+        android:layout_marginLeft="9dp"
         android:layout_toRightOf="@id/client_via"
         android:textColor="#888"
         android:textSize="12sp" />

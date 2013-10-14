@@ -47,4 +47,6 @@ public class UserStreamAdapter extends twitter4j.UserStreamAdapter {
         msg.obj = status;
         mHandler.sendMessage(msg);
     }
+
+
 }

@@ -24,6 +24,13 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.Menu;
 
+import com.nostra13.universalimageloader.cache.disc.impl.UnlimitedDiscCache;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.utils.StorageUtils;
+
+import java.io.File;
 import java.lang.ref.WeakReference;
 
 import twitter4j.Status;
@@ -31,6 +38,8 @@ import twitter4j.TwitterStream;
 
 public class MainActivity extends Activity {
     public static final int REQUEST_OAUTH = 0x11111111;
+    private static final int MEMORY_CACHE_SIZE = 2 * 1024 * 1024;
+    private static final int DISC_CACHE_SIZE = 10 * 1024 * 1024;
     private TwitterUtils mTwitterUtils;
     private Handler mHandler;
     private TimeLineFragment mHomeFragment, mMentionsFragment;
@@ -47,22 +56,46 @@ public class MainActivity extends Activity {
         }
         mHandler = new UiHandler(this);
 
+        File cacheDir = StorageUtils.getCacheDirectory(this);
+
+        DisplayImageOptions options = new DisplayImageOptions.Builder()
+                .cacheOnDisc(true)
+                .showStubImage(R.drawable.no_image)
+                .showImageOnFail(R.drawable.no_image)
+                .build();
+
+        ImageLoader.getInstance().init(
+                new ImageLoaderConfiguration.Builder(this)
+                        .discCache(new UnlimitedDiscCache(cacheDir))
+                        .defaultDisplayImageOptions(options)
+                        .build()
+
+        );
+
         setContentView(R.layout.activity_main);
 
         ActionBar bar = getActionBar();
         if (bar != null) {
+
+            bar.setDisplayShowHomeEnabled(false);
+            bar.setTitle("");
+            bar.setDisplayOptions(ActionBar.DISPLAY_SHOW_TITLE);
             bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
 
             mHomeFragment = TimeLineFragment.factory(R.layout.fragment_timeline);
-            mMentionsFragment = TimeLineFragment.factory(R.layout.fragment_timeline);
-
             bar.addTab(bar.newTab().setText(R.string.bar_home).setTabListener(
                     new TimeLineTabListener(mHomeFragment)
             ));
+
+           /*
+           mMentionsFragment = TimeLineFragment.factory(R.layout.fragment_timeline);
             bar.addTab(bar.newTab().setText(R.string.bar_mentions).setTabListener(
                     new TimeLineTabListener(mMentionsFragment)
             ));
+            */
         }
+
+
     }
 
     @Override
@@ -110,12 +143,14 @@ public class MainActivity extends Activity {
         mHomeFragment.addStatus(status);
     }
 
+    /*
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
+    */
 
     public static class UiHandler extends Handler {
         public static final int ADD_STATUS_TO_HOME = 0x11111111;

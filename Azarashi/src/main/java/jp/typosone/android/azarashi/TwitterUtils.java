@@ -22,6 +22,7 @@ import android.content.SharedPreferences;
 import twitter4j.TwitterStream;
 import twitter4j.TwitterStreamFactory;
 import twitter4j.auth.AccessToken;
+import twitter4j.conf.ConfigurationBuilder;
 
 /**
  * Twitter関連の複雑な手順を1メソッドにまとめたクラスです。
@@ -67,12 +68,11 @@ public class TwitterUtils {
 
     public TwitterStream getStream() {
         if (mTwitterStream == null && hasAccessToken()) {
-            mTwitterStream = TwitterStreamFactory.getSingleton();
-            mTwitterStream.setOAuthConsumer(
-                    mContext.getString(R.string.consumer_key),
-                    mContext.getString(R.string.consumer_secret)
-            );
-            mTwitterStream.setOAuthAccessToken(getAccessToken());
+            ConfigurationBuilder builder = new ConfigurationBuilder();
+            builder.setOAuthConsumerKey(mContext.getString(R.string.consumer_key));
+            builder.setOAuthConsumerSecret(mContext.getString(R.string.consumer_secret));
+            mTwitterStream
+                    = new TwitterStreamFactory(builder.build()).getInstance(getAccessToken());
         }
         return mTwitterStream;
     }

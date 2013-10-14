@@ -17,7 +17,7 @@ android {
     buildToolsVersion "18.0.1"
 
     defaultConfig {
-        minSdkVersion 11
+        minSdkVersion 14
         targetSdkVersion 16
     }
 }
@@ -27,4 +27,5 @@ dependencies {
     compile 'org.twitter4j:twitter4j-core:3.0.+'
     compile 'org.twitter4j:twitter4j-media-support:3.0.+'
     compile 'org.twitter4j:twitter4j-stream:3.0.+'
+    compile 'com.nostra13.universalimageloader:universal-image-loader:1.8.+'
 }
